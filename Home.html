@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MERIS — Home conversacional</title>
+<link rel="stylesheet" href="meris-tokens.css?v=58" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-text-primary);
+    background: #0F172A;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  #root { height: 100%; }
+  button { font-family: inherit; }
+
+  /* slim scrollbars */
+  .sb-scroll::-webkit-scrollbar, .strip-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+  .sb-scroll::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.16); border-radius: 8px; }
+  .sb-scroll::-webkit-scrollbar-thumb:hover { background: rgba(15,23,42,0.28); }
+  .sb-scroll::-webkit-scrollbar-track { background: transparent; }
+  .strip-scroll::-webkit-scrollbar { height: 0; }
+  .sb-scroll { scrollbar-width: thin; scrollbar-color: rgba(15,23,42,0.18) transparent; }
+
+  /* drag handle on reorganizable blocks */
+  .block-wrap { cursor: default; }
+  .block-wrap .grip-handle {
+    position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    z-index: 6; opacity: 0; color: var(--color-text-tertiary);
+    cursor: grab; padding: 2px 10px; border-radius: 7px;
+    background: var(--color-bg-surface); border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm); transition: opacity 120ms ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .block-wrap:hover .grip-handle { opacity: 1; }
+  .block-wrap .grip-handle:active { cursor: grabbing; }
+
+  /* table row hover */
+  .data-row:hover td { background: var(--color-bg-subtle); }
+
+  .ws-pill:hover { background: var(--color-bg-subtle) !important; }
+
+  /* block open/close + chat-center animations */
+  @keyframes paneIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+  .pane-anim { animation: paneIn 240ms cubic-bezier(0.22, 1, 0.36, 1); }
+  @keyframes chatCenterIn { from { opacity: 0.5; } to { opacity: 1; } }
+  .chat-centered { animation: chatCenterIn 220ms ease; }
+
+  /* pane drag handle */
+  .pane-wrap .pane-grip { opacity: 0; transition: opacity 120ms ease; }
+  .pane-wrap:hover .pane-grip { opacity: 1; }
+
+  /* typing indicator */
+  .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-text-tertiary); display: inline-block; animation: typingBlink 1.2s infinite ease-in-out; }
+  @keyframes typingBlink { 0%, 60%, 100% { opacity: 0.25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } }
+  .crumb-link:hover { color: var(--color-text-link) !important; }
+
+  /* scenario strip tabs */
+  .scen-tab {
+    display: flex; align-items: center; gap: 7px; padding: 0 11px; height: 30px;
+    flex-shrink: 0; border-radius: 7px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 12.5px; font-weight: 500; white-space: nowrap;
+    background: transparent; color: #94A3B8; transition: background 120ms ease, color 120ms ease;
+  }
+  .scen-tab:hover { background: rgba(255,255,255,0.08); }
+  .scen-tab.active { background: #fff; color: #0F172A; }
+  .scen-num { font-size: 10.5px; font-weight: 700; opacity: 0.6; font-variant-numeric: tabular-nums; }
+  .scen-tab.active .scen-num { opacity: 0.45; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="src/icons.jsx?v=58"></script>
+<script type="text/babel" src="src/data.jsx?v=58"></script>
+<script type="text/babel" src="src/Blocks.jsx?v=58"></script>
+<script type="text/babel" src="src/DocPanes.jsx?v=58"></script>
+<script type="text/babel" src="src/ShareModal.jsx?v=58"></script>
+<script type="text/babel" src="src/ChatPanel.jsx?v=58"></script>
+<script type="text/babel" src="src/Sidebar.jsx?v=58"></script>
+<script type="text/babel" src="src/Library.jsx?v=58"></script>
+<script type="text/babel" src="src/Screens.jsx?v=58"></script>
+<script type="text/babel" src="tweaks-panel.jsx?v=58"></script>
+<script type="text/babel" src="src/app.jsx?v=58"></script>
+</body>
+</html>
