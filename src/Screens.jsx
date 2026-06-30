@@ -146,13 +146,13 @@ function EmptyContent() {
 }
 
 // ---- chat pane ----------------------------------------------------------
-function ChatPane({ variant, messages, onSend, onSkill, showSkills, density, markRef, onClearMark, onQuickAction, onAction, activeFocus, onTagClick, thinking, onShare, onConclude, onRenameChat, chatMembers, wide, sharedHint }) {
+function ChatPane({ variant, messages, onSend, onSkill, showSkills, density, markRef, onClearMark, onQuickAction, onAction, activeFocus, onTagClick, thinking, onShare, onConclude, onRenameChat, chatMembers, wide, sharedHint, onConnect }) {
   const meta = [...messages].reverse().find((m) => m.chat);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', background: 'transparent', overflow: 'hidden' }}>
       {variant === 'thread' && <ConvHeader meta={meta && meta.chat} onShare={onShare} onConclude={onConclude} onRename={onRenameChat} members={chatMembers} />}
       <div style={{ flex: 1, minHeight: 0 }}>
-        <ChatPanel variant={variant} align={variant === 'welcome' ? 'center' : 'start'} messages={messages} onSend={onSend} onSkill={onSkill} showSkills={showSkills} density={density} narrow={!wide} markRef={markRef} onClearMark={onClearMark} onQuickAction={onQuickAction} onAction={onAction} activeFocus={activeFocus} onTagClick={onTagClick} thinking={thinking} sharedHint={sharedHint} />
+        <ChatPanel variant={variant} align={variant === 'welcome' ? 'center' : 'start'} messages={messages} onSend={onSend} onSkill={onSkill} showSkills={showSkills} density={density} narrow={!wide} markRef={markRef} onClearMark={onClearMark} onQuickAction={onQuickAction} onAction={onAction} activeFocus={activeFocus} onTagClick={onTagClick} thinking={thinking} sharedHint={sharedHint} onConnect={onConnect} />
       </div>
     </div>
   );
@@ -166,10 +166,10 @@ function ScreenContent(props) {
   if (scenario === 8) return <DashboardLibrary density={density} onOpen={onOpenDash} onNewMessage={onNewFromLibrary} onNewDashboard={props.onNewDashboard} onTvConfig={props.onTvConfig} dashboards={props.savedDashboards} onRenameDashboard={props.onRenameDashboard} onDeleteDashboard={props.onDeleteDashboard} dashGroups={props.dashGroups} onCreateGroup={props.onCreateGroup} onRenameGroup={props.onRenameGroup} onDeleteGroup={props.onDeleteGroup} onMoveDash={props.onMoveDash} onShareDashboard={props.onShareDashboard} onDescDashboard={props.onDescDashboard} homeDashId={props.homeDashId} onPinDashHome={props.onPinDashHome} onUnpinDashHome={props.onUnpinDashHome} onShareGroup={props.onShareGroup} />;
   if (scenario === 9) return <SavedDashboardView density={density} openDash={props.openDash} onBack={onBackLibrary} onEdit={onEdit} onKpiAction={onKpiAction} homeKpis={dashKpis} onShare={() => props.onShareDashboard && props.onShareDashboard(props.openDash)} sources={sources} homeDashId={props.homeDashId} onPinDashHome={props.onPinDashHome} onUnpinDashHome={props.onUnpinDashHome} />;
   if (scenario === 12) return <SharedChatsView sharedChats={sharedChats} onOpen={onOpenSharedChat} onNewShared={props.onNewSharedChat} onRenameShared={props.onRenameSharedChat} onFavShared={props.onFavSharedChat} />;
-  if (scenario === 13) return <DataSourcesView sources={props.sources} onAddCsv={props.onAddCsv} onAsk={props.onAskSource} csvImport={props.csvImport} onUpdateFile={props.onUpdateFile} onDownloadFile={props.onDownloadFile} onDeleteFile={props.onDeleteFile} onShowHistory={props.onShowHistory} onSyncSource={props.onSyncSource} onConfigHome={props.onConfigHome} onTvConfig={props.onTvConfig} onOpenTvMode={props.onOpenTvMode} />;
+  if (scenario === 13) return <DataSourcesView sources={props.sources} onAddCsv={props.onAddCsv} onConnect={props.onConnect} onAsk={props.onAskSource} csvImport={props.csvImport} onUpdateFile={props.onUpdateFile} onDownloadFile={props.onDownloadFile} onDeleteFile={props.onDeleteFile} onShowHistory={props.onShowHistory} onSyncSource={props.onSyncSource} onConfigHome={props.onConfigHome} onTvConfig={props.onTvConfig} onOpenTvMode={props.onOpenTvMode} />;
 
   const chatVariant = scenario <= 2 ? 'welcome' : 'thread';
-  const chatEl = <ChatPane variant={chatVariant} messages={messages} onSend={onSend} onSkill={onSkill} showSkills={showSkills} density={density} markRef={markRef} onClearMark={onClearMark} onQuickAction={onQuickAction} onAction={onAction} activeFocus={activeFocus} onTagClick={onTagClick} thinking={thinking} onShare={onShare} onConclude={props.onConcludeChat} onRenameChat={props.onRenameActiveChat} chatMembers={chatMembers} wide={panes.length === 0} sharedHint={props.sharedHint} />;
+  const chatEl = <ChatPane variant={chatVariant} messages={messages} onSend={onSend} onSkill={onSkill} showSkills={showSkills} density={density} markRef={markRef} onClearMark={onClearMark} onQuickAction={onQuickAction} onAction={onAction} activeFocus={activeFocus} onTagClick={onTagClick} thinking={thinking} onShare={onShare} onConclude={props.onConcludeChat} onRenameChat={props.onRenameActiveChat} chatMembers={chatMembers} wide={panes.length === 0} sharedHint={props.sharedHint} onConnect={props.onConnect} />;
 
   let body = null;
   if (scenario === 10) {
@@ -651,7 +651,7 @@ function SectionCard({ children }) {
   );
 }
 
-function DataSourcesView({ sources, onAddCsv, onAsk, csvImport, onUpdateFile, onDownloadFile, onDeleteFile, onShowHistory, onSyncSource, onConfigHome, onTvConfig, onOpenTvMode }) {
+function DataSourcesView({ sources, onAddCsv, onConnect, onAsk, csvImport, onUpdateFile, onDownloadFile, onDeleteFile, onShowHistory, onSyncSource, onConfigHome, onTvConfig, onOpenTvMode }) {
   const fileRef = useRefSC(null);
   const list = sources || DATA_SOURCES;
   const fixed = list.filter((s) => s.kind === 'fixa');
@@ -667,7 +667,7 @@ function DataSourcesView({ sources, onAddCsv, onAsk, csvImport, onUpdateFile, on
   const toneBg = { success: 'var(--color-success-bg)', info: 'var(--color-info-bg)', warning: 'var(--color-warning-bg)' };
   const onFile = (e) => { const f = (e.target.files || [])[0]; if (f && onAddCsv) onAddCsv(f.name); e.target.value = ''; };
   const importBtn = (
-    <SecondaryBtn icon="upload" onClick={() => fileRef.current && fileRef.current.click()}>Importar CSV</SecondaryBtn>
+    <SecondaryBtn icon="plus" onClick={() => onConnect && onConnect()}>Conectar fonte</SecondaryBtn>
   );
   return (
     <div className="sb-scroll" style={{ height: '100%', overflowY: 'auto' }}>
@@ -728,18 +728,18 @@ function DataSourcesView({ sources, onAddCsv, onAsk, csvImport, onUpdateFile, on
           {fixed.map((s) => <SourceRow key={s.id} s={s} onAsk={onAsk} onSync={onSyncSource} />)}
         </SourceSection>
 
-        <SourceSection title="Fontes externas" caption="Arquivos e planilhas que você importa. Adição imediata, sem aprovação" action={importBtn}>
+        <SourceSection title="Fontes externas" caption="Bancos, data warehouses, APIs, modelos 3D e planilhas. Adição imediata, sem aprovação" action={importBtn}>
           {manual.map((s) => <FileSourceRow key={s.id} s={s} onUpdate={onUpdateFile} onDownload={onDownloadFile} onDelete={onDeleteFile} onHistory={onShowHistory} />)}
           {csvImport && <CsvImportRow imp={csvImport} />}
           {csv.map((s) => <SourceRow key={s.id} s={s} onAsk={onAsk} />)}
           {csv.length === 0 && manual.length === 0 && !csvImport && (
-            <button onClick={() => fileRef.current && fileRef.current.click()}
+            <button onClick={() => onConnect && onConnect()}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '26px', border: '1.5px dashed var(--color-border-strong)', borderRadius: 12, background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 500, transition: 'all 120ms ease' }}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--ai)'; e.currentTarget.style.background = 'var(--ai-bg)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border-strong)'; e.currentTarget.style.background = 'transparent'; }}>
-              <Icon name="upload" size={20} />
-              <span>Importar uma planilha CSV</span>
-              <span style={{ fontSize: 11.5, color: 'var(--color-text-tertiary)' }}>Arquivos .csv até 20 MB</span>
+              <Icon name="plus" size={20} />
+              <span>Conectar uma fonte externa</span>
+              <span style={{ fontSize: 11.5, color: 'var(--color-text-tertiary)' }}>PostgreSQL, BigQuery, Snowflake, API REST, Modelo 3D, JSON ou CSV</span>
             </button>
           )}
         </SourceSection>

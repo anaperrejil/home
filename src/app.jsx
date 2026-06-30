@@ -85,6 +85,7 @@ function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [concludeModal, setConcludeModal] = useState(null); // { chatId, title }
   const [csvImport, setCsvImport] = useState(null); // simulação de importação de CSV em andamento
+  const [connector, setConnector] = useState(null); // { open:true, kind } — assistente de conexão de fonte externa
   const [historyDrawerId, setHistoryDrawerId] = useState(null); // drawer de histórico de uma fonte manual
   // alerta na sidebar = só problemas em bases nativas (software não conectado é estado normal, não alerta)
   const sourceAlert = sources.filter((s) => s.kind === 'fixa' && (s.status === 'down' || s.status === 'stale')).length;
@@ -511,6 +512,42 @@ function App() {
       setToast('Fonte CSV conectada: ' + display);
     }, 700 * (steps.length + 1));
   }
+  // conclui o assistente de conexão de fonte externa: registra a fonte e (opcional) já abre um chat
+  function finishConnector(payload) {
+    setConnector(null);
+    if (!payload) return;
+    const recordsByKind = { postgres: '24.180', bigquery: '61.420', snowflake: '88.900', rest: '5.270', model3d: '25.820', json: '2.472', csv: '1.310' };
+    const id = payload.kind + '-' + (Date.now() % 100000);
+    const ns = {
+      id, name: payload.name, system: payload.system, kind: 'csv', icon: payload.icon,
+      status: 'ok', latency: '—', sync: 'agora', records: recordsByKind[payload.kind] || '—',
+      desc: `Fonte externa conectada por Ana Beatriz · ${payload.label}.`,
+    };
+    DATA_SOURCES.push(ns); SOURCE_BY_ID[id] = ns; // disponibiliza no seletor de base das mensagens
+    setSources((ss) => [...ss, ns]);
+    if (payload.question) {
+      setToast('Fonte conectada: ' + payload.label);
+      askConnectedSource(ns, payload.question);
+    } else {
+      setToast('Fonte conectada: ' + payload.name);
+    }
+  }
+  // abre um chat já perguntando sobre a fonte recém-conectada
+  function askConnectedSource(src, question) {
+    setActiveNav('home'); setActiveChat('c1'); setOpenDash(null);
+    setPanes([]); setPaneDir('row'); setScenario(4);
+    setMessages([
+      { role: 'user', text: question, time: 'agora' },
+      { role: 'assistant', agent: 'analista de dados', chat: { title: src.name, subtitle: 'Fonte externa · ' + src.system }, time: 'agora', rich: {
+        badges: [{ label: 'Fonte conectada', tone: 'success', icon: 'check-circle' }],
+        blocks: [
+          { type: 'p', parts: ['Consultando a fonte recém-conectada ', { b: src.name }, ` (${src.system}). Já indexei o conteúdo e posso responder em linguagem natural.`] },
+          { type: 'dbfield', value: src.id },
+          { type: 'p', parts: ['Esta é uma prévia simulada — a resposta completa usaria os dados reais da fonte.'] },
+        ],
+      } },
+    ]);
+  }
   function askAboutSource(src) {
     setActiveNav('home'); setActiveChat('c1'); setOpenDash(null);
     setPanes([]); setPaneDir('row'); setScenario(4);
@@ -899,6 +936,7 @@ function App() {
               onEdit={() => go(10)}
               markRef={markRef} onMark={handleMark} onClearMark={() => setMarkRef(null)}
               sources={sources} onAddCsv={addCsvSource} onAskSource={askAboutSource} csvImport={csvImport}
+              onConnect={(kind) => setConnector({ open: true, kind: kind || null })}
               textDoc={textDoc} onToast={setToast}
               onConfigHome={() => setHomeConfigOpen(true)}
               onNewDashboard={startNewDashboard} onSaveDashboard={saveDashboard}
@@ -918,6 +956,7 @@ function App() {
       {tvConfigOpen && <TvConfigModal config={tvConfig} dashboards={savedDashboards} onChange={setTvConfig} onOpenTv={() => { setTvConfigOpen(false); setTvOpen(true); }} onClose={() => setTvConfigOpen(false)} />}
       {tvOpen && <TvOverlay config={tvConfig} dashboards={savedDashboards} onClose={() => setTvOpen(false)} onInterval={(sec) => setTvConfig((c) => ({ ...c, interval: sec }))} />}
       {homeConfigOpen && <HomeConfigModal blocks={homePanes} onBlocks={changeHomeBlocks} homeDashId={homeDashId} dashboards={savedDashboards} onPickDash={(d) => pinDashboardToHome(d)} onClose={() => setHomeConfigOpen(false)} />}
+      {connector && connector.open && <ConnectorModal initialKind={connector.kind} onClose={() => setConnector(null)} onComplete={finishConnector} />}
       {historyDrawerId && (() => { const src = sources.find((x) => x.id === historyDrawerId); return src ? <HistoryDrawer source={src} onClose={() => setHistoryDrawerId(null)} /> : null; })()}
       {toast && (
         <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 80, display: 'flex', alignItems: 'center', gap: 9, background: 'var(--color-text-primary)', color: '#fff', padding: '10px 16px', borderRadius: 10, boxShadow: 'var(--shadow-lg)', fontSize: 13.5, fontWeight: 500 }}>
@@ -1319,7 +1358,7 @@ function WelcomeModal({ onConfirm }) {
           <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', lineHeight: 1.55, margin: '8px auto 0', maxWidth: 460 }}>
             Agora a sua home é conversacional: o chat com o MERIS fica ao centro e os blocos que você escolher abrem em tela dividida ao lado.
           </p>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ai-text)', marginTop: 12 }}>Selecione o que você gostaria de ver · escolha 1 ou 2 · {sel.length}/2</div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ai-text)', marginTop: 12 }}>Selecione o que você gostaria de ver · escolha 1 ou 2</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '16px 28px 8px' }}>
           {OPTS.map((o) => {

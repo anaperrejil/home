@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MERIS — Home conversacional</title>
-<link rel="stylesheet" href="meris-tokens.css?v=58" />
+<link rel="stylesheet" href="meris-tokens.css?v=63" />
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; height: 100%; }
@@ -70,6 +70,10 @@
   .scen-tab.active { background: #fff; color: #0F172A; }
   .scen-num { font-size: 10.5px; font-weight: 700; opacity: 0.6; font-variant-numeric: tabular-nums; }
   .scen-tab.active .scen-num { opacity: 0.45; }
+
+  /* connector "detecting" spinner */
+  @keyframes cnSpin { to { transform: rotate(360deg); } }
+  .cn-spin { animation: cnSpin 0.9s linear infinite; }
 </style>
 </head>
 <body>
@@ -79,16 +83,17 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-<script type="text/babel" src="src/icons.jsx?v=58"></script>
-<script type="text/babel" src="src/data.jsx?v=58"></script>
-<script type="text/babel" src="src/Blocks.jsx?v=58"></script>
-<script type="text/babel" src="src/DocPanes.jsx?v=58"></script>
-<script type="text/babel" src="src/ShareModal.jsx?v=58"></script>
-<script type="text/babel" src="src/ChatPanel.jsx?v=58"></script>
-<script type="text/babel" src="src/Sidebar.jsx?v=58"></script>
-<script type="text/babel" src="src/Library.jsx?v=58"></script>
-<script type="text/babel" src="src/Screens.jsx?v=58"></script>
-<script type="text/babel" src="tweaks-panel.jsx?v=58"></script>
-<script type="text/babel" src="src/app.jsx?v=58"></script>
+<script type="text/babel" src="src/icons.jsx?v=63"></script>
+<script type="text/babel" src="src/data.jsx?v=63"></script>
+<script type="text/babel" src="src/Blocks.jsx?v=63"></script>
+<script type="text/babel" src="src/DocPanes.jsx?v=63"></script>
+<script type="text/babel" src="src/ShareModal.jsx?v=63"></script>
+<script type="text/babel" src="src/ChatPanel.jsx?v=63"></script>
+<script type="text/babel" src="src/Connector.jsx?v=63"></script>
+<script type="text/babel" src="src/Sidebar.jsx?v=63"></script>
+<script type="text/babel" src="src/Library.jsx?v=63"></script>
+<script type="text/babel" src="src/Screens.jsx?v=63"></script>
+<script type="text/babel" src="tweaks-panel.jsx?v=63"></script>
+<script type="text/babel" src="src/app.jsx?v=63"></script>
 </body>
 </html>

@@ -58,10 +58,11 @@ function SkillCard({ skill, onClick, density }) {
   );
 }
 
-function Composer({ onSend, density, placeholder = 'Pergunte ao MERIS ou descreva um painel para gerar…', markRef, onClearMark, onQuickAction, onSkill }) {
+function Composer({ onSend, density, placeholder = 'Pergunte ao MERIS ou descreva um painel para gerar…', markRef, onClearMark, onQuickAction, onSkill, onConnect }) {
   const [val, setVal] = useStateCP('');
   const [attachments, setAttachments] = useStateCP([]);
   const [gedOpen, setGedOpen] = useStateCP(false);
+  const [dataSource, setDataSource] = useStateCP(null); // null = Automático (o agente escolhe)
   const taRef = useRefCP(null);
   const fileRef = useRefCP(null);
   const submit = () => {
@@ -116,6 +117,7 @@ function Composer({ onSend, density, placeholder = 'Pergunte ao MERIS ou descrev
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', minWidth: 0 }}>
           <AttachMenu onPickGed={() => setGedOpen(true)} onPickLocal={() => fileRef.current && fileRef.current.click()} />
           <SkillsChip onSkill={onSkill} />
+          <SourceChip selected={dataSource} onSelect={setDataSource} onConnect={onConnect} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <span className="font-mono" style={{ fontSize: 11.5, color: 'var(--color-text-tertiary)' }}>{val.length} / 4000</span>
@@ -276,6 +278,62 @@ function SkillsChip({ onSkill }) {
               </span>
             </button>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Seletor de fonte de dados do chat: "Automático" (o agente escolhe) ou uma fonte específica
+function SourceChip({ selected, onSelect, onConnect }) {
+  const [open, setOpen] = useStateCP(false);
+  const [pos, setPos] = useStateCP(null); // { left, top|bottom } em coordenadas de viewport (fixed)
+  const ref = useRefCP(null);
+  const btnRef = useRefCP(null);
+  useEffectCP(() => {
+    if (!open) return;
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target) && btnRef.current && !btnRef.current.contains(e.target)) setOpen(false); };
+    window.addEventListener('mousedown', h);
+    return () => window.removeEventListener('mousedown', h);
+  }, [open]);
+  const toggle = () => {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      const spaceAbove = r.top;
+      // abre para cima se couber, senão para baixo — sempre em coordenadas fixas (sem clipping)
+      if (spaceAbove > 380) setPos({ left: r.left, bottom: window.innerHeight - r.top + 8 });
+      else setPos({ left: r.left, top: r.bottom + 8 });
+    }
+    setOpen((o) => !o);
+  };
+  const list = (typeof DATA_SOURCES !== 'undefined' ? DATA_SOURCES : []);
+  const label = selected ? selected.name : 'Automático';
+  const row = (icon, title, desc, isOn, onClick) => (
+    <button onClick={onClick}
+      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'} onMouseLeave={(e) => e.currentTarget.style.background = isOn ? 'var(--ai-bg)' : 'transparent'}
+      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', border: 'none', background: isOn ? 'var(--ai-bg)' : 'transparent', borderRadius: 9, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}>
+      <span style={{ width: 28, height: 28, borderRadius: 8, background: isOn ? 'var(--ai-bg)' : 'var(--color-bg-subtle)', color: isOn ? 'var(--ai-text)' : 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={icon} size={15} /></span>
+      <span style={{ minWidth: 0, flex: 1 }}>
+        <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
+        {desc && <span style={{ display: 'block', fontSize: 11.5, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{desc}</span>}
+      </span>
+      {isOn && <Icon name="check" size={15} style={{ color: 'var(--ai-text)', flexShrink: 0 }} />}
+    </button>
+  );
+  return (
+    <div style={{ position: 'relative' }}>
+      <button ref={btnRef} onClick={toggle}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, height: 30, padding: '0 10px', borderRadius: 8, border: `1px solid ${selected ? 'var(--ai)' : 'var(--color-border)'}`, background: selected ? 'var(--ai-bg)' : 'var(--color-bg-surface)', color: selected ? 'var(--ai-text)' : 'var(--color-text-secondary)', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', transition: 'all 120ms ease', whiteSpace: 'nowrap', maxWidth: 220 }}>
+        <Icon name={selected ? (selected.icon || 'database') : 'database'} size={15} />
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Fonte: {label}</span>
+        <Icon name="chevron-down" size={14} style={{ opacity: 0.7, flexShrink: 0 }} />
+      </button>
+      {open && pos && (
+        <div ref={ref} style={{ position: 'fixed', left: pos.left, top: pos.top, bottom: pos.bottom, zIndex: 90, width: 320, maxHeight: 360, overflowY: 'auto', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', borderRadius: 12, boxShadow: 'var(--shadow-lg)', padding: 6 }} className="sb-scroll">
+          <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', padding: '6px 8px 4px' }}>Fonte de dados</div>
+          {row('sparkles', 'Automático', 'O agente escolhe a fonte que melhor responde', !selected, () => { onSelect(null); setOpen(false); })}
+          <div style={{ height: 1, background: 'var(--color-border)', margin: '4px 8px' }} />
+          {list.map((s) => row(s.icon || 'database', s.name, s.system, selected && selected.id === s.id, () => { onSelect(s); setOpen(false); }))}
         </div>
       )}
     </div>
@@ -595,7 +653,7 @@ function Message({ msg, onAction, activeFocus, onTagClick }) {
   );
 }
 
-function ChatPanel({ variant = 'welcome', messages = [], onSend, onSkill, showSkills = true, density = 'comfortable', narrow = false, align = 'center', markRef, onClearMark, onQuickAction, onAction, activeFocus, onTagClick, thinking, sharedHint }) {
+function ChatPanel({ variant = 'welcome', messages = [], onSend, onSkill, showSkills = true, density = 'comfortable', narrow = false, align = 'center', markRef, onClearMark, onQuickAction, onAction, activeFocus, onTagClick, thinking, sharedHint, onConnect }) {
   const scrollRef = useRefCP(null);
   useEffectCP(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages.length, thinking]);
 
@@ -612,7 +670,7 @@ function ChatPanel({ variant = 'welcome', messages = [], onSend, onSkill, showSk
               3 documentos aguardam aprovação e a curva S de comissionamento segue 2,1 pts acima do previsto. Por onde começar?
             </p>
           </div>
-          <div style={{ marginBottom: 20 }}><Composer onSend={onSend} density={density} onQuickAction={onQuickAction} onSkill={onSkill} /></div>
+          <div style={{ marginBottom: 20 }}><Composer onSend={onSend} density={density} onQuickAction={onQuickAction} onSkill={onSkill} onConnect={onConnect} /></div>
           {showSkills && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', marginBottom: 12 }}>
@@ -644,7 +702,7 @@ function ChatPanel({ variant = 'welcome', messages = [], onSend, onSkill, showSk
               <Icon name="users" size={13} /> Conversa em grupo · mencione <strong style={{ fontWeight: 600, color: 'var(--ai-text)' }}>@meris</strong> para acionar o agente
             </div>
           )}
-          <Composer onSend={onSend} density={density} placeholder={sharedHint ? 'Escreva para a equipe, ou mencione @meris…' : 'Continue a conversa, ou peça para abrir uma TAG…'} markRef={markRef} onClearMark={onClearMark} onQuickAction={onQuickAction} onSkill={onSkill} />
+          <Composer onSend={onSend} density={density} placeholder={sharedHint ? 'Escreva para a equipe, ou mencione @meris…' : 'Continue a conversa, ou peça para abrir uma TAG…'} markRef={markRef} onClearMark={onClearMark} onQuickAction={onQuickAction} onSkill={onSkill} onConnect={onConnect} />
           <div style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--color-text-tertiary)', marginTop: 10 }}>MERIS pode produzir respostas incorretas. Sempre verifique com a fonte original.</div>
         </div>
       </div>
