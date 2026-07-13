@@ -2,6 +2,10 @@
 
 > Documentação de handoff. Jornadas, telas, itens e comportamentos implementados.
 > Rodar: `python3 serve.py` na pasta do projeto → http://localhost:5173/Home.html
+>
+> **Backlog de produto**: os épicos e histórias de usuário vivem no Linear —
+> [PRO-53 · Home MERIS](https://linear.app/coodex-ai/issue/PRO-53/home-meris).
+> Este documento descreve **o que o protótipo faz**; o Linear define **o que será construído**.
 
 ---
 
@@ -9,13 +13,13 @@
 
 ## J1 · Primeiro acesso
 1. Ao abrir o app, surge o modal **"Bem-vinda à nova Home"** (marca M + explicação da home conversacional) com 4 blocos: Dashboard padrão, Resumo diário, Documentos para assinar, Viewer 3D.
-2. O usuário **escolhe 1 ou 2** (contador "N/2"; com 2 marcados os demais esmaecem; "Começar" desabilitado em 0).
+2. O usuário **escolhe 1 ou 2** (com 2 marcados os demais esmaecem; "Começar" desabilitado em 0; o modal Configurar home mantém o contador "N/2").
 3. Confirmando, a home abre com o chat ao centro e os blocos escolhidos em tela dividida. A escolha sincroniza com a Central de controle.
 
 ## J2 · Conversar e abrir painéis
 1. Na home, o usuário pergunta no chat ou usa as 6 **sugestões para começar** (onboarding guiado, resumo do dia, documentos críticos, curva S, itens fora de ciclo, 3D) — cada uma com resposta própria.
 2. O roteamento por intenção abre o painel certo **em tela dividida**: dashboard, documento (P&ID), relatório (RIR), viewer 3D + ativos, fila de aprovações. Citar um **dashboard salvo pelo nome** abre aquele dashboard específico ao lado.
-3. Recursos da conversa: chips de TAG clicáveis (focam o 3D / abrem documento), chips de SLA, cards de referência, checklists, campo de base de dados, título **renomeável inline** (lápis), Compartilhar, painéis redimensionáveis e reordenáveis, menu **Skills**.
+3. Recursos da conversa: chips de TAG clicáveis (focam o 3D / abrem documento), chips de SLA, cards de referência, checklists, campo de base de dados, título **renomeável inline** (lápis), Compartilhar, painéis redimensionáveis e reordenáveis, menu **Skills**, **seletor de fonte de dados** (Automático ou uma fonte específica).
 
 ## J3 · Criar documentos (artefatos)
 1. Pedir *"criar/gerar/escrever/redigir [ata, memorando, relatório, procedimento, comunicado, ofício, e-mail, carta, especificação, plano de ação]"* abre um **bloco lateral com o documento gerado** — título adaptado ao tipo, cabeçalho (projeto · data), seções numeradas e assinatura.
@@ -23,7 +27,13 @@
 
 ## J4 · Dados que não existem nas bases
 1. Pedidos que dependem de dados fora das fontes fixas (linha de base do cronograma, custo, EVM…) recebem a resposta *"Sei montar essa análise. O método de cálculo é direto. O ponto é que ela depende da linha de base do cronograma, que não está nas fontes fixas"*, com callout **"Importe o cronograma como fonte externa (CSV)"** e botão **Abrir Fontes de dados**.
-2. Após importar um CSV (J8), a checklist de insumos dos comentários de KPI reconhece a base como disponível ✓.
+2. Após conectar a fonte (J4a/J8), a checklist de insumos dos comentários de KPI reconhece a base como disponível ✓.
+
+## J4a · Conectar uma fonte externa (assistente de conexão)
+1. **"Conectar fonte"** (na Central de controle → Fontes externas) abre o **catálogo de conectores**: PostgreSQL, BigQuery, Snowflake, API REST, Modelo 3D (AVEVA E3D/PDMS ou Plant 3D), Pacote JSON e Planilha CSV.
+2. Cada tipo tem um **assistente por etapas** com stepper próprio: conexão/credenciais ou upload → teste/detecção (spinner "analisando…" e resultado simulado: teste de conexão, schemas com checkbox, endpoints, schema inferido, relações do pacote JSON com % de match) → confirmação.
+3. **Resumo final com IA**: identifica o tema da fonte e sugere **perguntas prontas clicáveis**. Clicar numa sugestão **conecta a fonte e já abre um chat** com aquela pergunta (badge "Fonte conectada" + campo de base de dados). "Conectar fonte" apenas registra e mostra toast.
+4. A fonte conectada entra na lista de **Fontes externas** (status "Conectada", registros, sincronização) e fica disponível no **seletor de fonte do chat** (J2) e no campo de base das mensagens.
 
 ## J5 · Organizar dashboards
 1. **Meus dashboards**: busca no header (nome + descrição, grupos vazios somem durante a busca), grupos/pastas com contagem e avatares, seção "Sem grupo".
@@ -45,7 +55,7 @@
 ## J8 · Central de controle
 1. **Card Home**: Configurar → modal com **blocos da home** (mesmo seletor de 1–2 do onboarding, aplica ao vivo) + **dashboard da home** (padrão ou salvos, com descrição).
 2. **Card Modo TV**: **Abrir modo TV** (direto, com a config salva) + Configurar → assistente em etapas (J9).
-3. **Card Fontes de dados**: resumo (Conectadas/Sincronizando/Desatualizadas); **fontes fixas** (Cortex MERIS, GED documental, Matriz de e-mail) com **Sincronizar** (ícone ↻ → "Sincronizando…" → conectada agora) e **Perguntar** (abre conversa sobre a fonte); **fontes externas** com **Importar CSV** (simulação de processamento: enviar → ler → mapear colunas → validar → indexar, com barra de progresso) e o arquivo anexado (ex.: `Lista_Ativos_U4730_Rev04.csv`) com **Baixar**, **Atualizar** (vira Rev+1 e alimenta o histórico), **Excluir** (confirmação) e **Histórico (N)** — drawer lateral com as versões, autores, notas e datas (badge "Atual" na vigente).
+3. **Card Fontes de dados**: resumo (Conectadas/Sincronizando/Desatualizadas); **fontes fixas** (Cortex MERIS, GED documental, Matriz de e-mail) com **Sincronizar** (ícone ↻ → "Sincronizando…" → conectada agora) e **Perguntar** (abre conversa sobre a fonte); **fontes externas** com botão **Conectar fonte** → abre o **assistente de conexão** (J4a: catálogo de 7 tipos + wizard por etapas + resumo com IA). Arquivos anexados (ex.: `Lista_Ativos_U4730_Rev04.csv`) têm **Baixar**, **Atualizar** (vira Rev+1 e alimenta o histórico), **Excluir** (confirmação) e **Histórico (N)** — drawer lateral com as versões, autores, notas e datas (badge "Atual" na vigente). A importação de CSV avulsa mantém a simulação de processamento (enviar → ler → mapear colunas → validar → indexar, com barra de progresso).
 
 ## J9 · Modo TV (telões e salas de controle)
 1. **Assistente em 3 etapas** com stepper: **(1) Dashboards** — cards com miniatura, busca ("podem haver muitos dashboards") e número da ordem de seleção; dashboards grandes mostram o selo "2 TELAS". **(2) Tempo** — 10s / 30s / 60s por tela. **(3) Confirmar** — resumo ("N telas, trocando a cada Xs, ciclo completo de Ys"), aviso de dashboard grande (*"não cabe em uma tela: os blocos serão divididos e reposicionados automaticamente em 2 telas"*) e playlist final com miniaturas + **setas ↑/↓ para reposicionar**. Botões Concluir e **Abrir modo TV**.
@@ -87,6 +97,7 @@
 - Auto-grow · 0/4000 · Enter envia · Shift+Enter quebra.
 - **Anexar** (GED com busca, ou arquivo local; chips removíveis; resposta de análise).
 - **Skills** (genéricas): Criar um dashboard · Resumir informações · Gerar um documento · Analisar uma planilha (cada uma com fluxo real).
+- **Fonte: Automático** — seletor de fonte de dados: **Automático** (o agente escolhe a fonte que melhor responde, padrão) ou uma fonte específica (fixas + externas conectadas). Fonte escolhida destaca o chip em azul; o dropdown usa posição fixa (abre para cima ou para baixo conforme o espaço, nunca cortado).
 - Em modo edição: chip "Comentando: {item}".
 
 ## Cards de KPI (padrão único em todas as telas)
@@ -115,6 +126,7 @@
 | Concluir conversa | Confirmação + nota opcional |
 | Adicionar ao dashboard | Catálogo de KPIs/visualizações (só no editor) |
 | Anexar do GED | Busca de documentos |
+| Conectar fonte externa | Catálogo de 7 conectores + assistente por etapas + resumo com IA (J4a) |
 | Busca global | Conversas + dashboards |
 | Drawer Histórico | Versões do arquivo anexado |
 
@@ -137,7 +149,8 @@
 | `src/Blocks.jsx` | Blocos: dashboard, KPIs, Curva S, viewer 3D, tabelas, Resumo do dia, Documento gerado, Documentos p/ assinar |
 | `src/DocPanes.jsx` | Documento técnico (P&ID) e relatório (RIR) |
 | `src/ShareModal.jsx` | Compartilhamento (conversa / indicador / dashboard / grupo) |
-| `src/ChatPanel.jsx` | Chat: boas-vindas, thread, composer, mensagens ricas, snapshot, checklist, campo de base |
+| `src/Connector.jsx` | Assistente de conexão de fontes externas (catálogo de conectores + wizards por tipo + resumo com IA) |
+| `src/ChatPanel.jsx` | Chat: boas-vindas, thread, composer (com seletor de fonte), mensagens ricas, snapshot, checklist, campo de base |
 | `src/Sidebar.jsx` | Rail de módulos + sidebar de chats (favoritos, grupos, busca) |
 | `src/Library.jsx` | Meus dashboards (grupos, cards, descrições) + dashboard salvo |
 | `src/Screens.jsx` | Composição de telas, split panes, editor, Central de controle, chats compartilhados |
