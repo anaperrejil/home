@@ -6,6 +6,9 @@
 > **Backlog de produto**: os épicos e histórias de usuário vivem no Linear —
 > [PRO-53 · Home MERIS](https://linear.app/coodex-ai/issue/PRO-53/home-meris).
 > Este documento descreve **o que o protótipo faz**; o Linear define **o que será construído**.
+>
+> **Requisitos de handover das jornadas** (gatilho, pré-condições, passos, ramificações,
+> estados de erro/vazio/permissão, resultado e critério de sucesso): [ESPECIFICACAO-JORNADAS.md](./ESPECIFICACAO-JORNADAS.md).
 
 ---
 
