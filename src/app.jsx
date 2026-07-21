@@ -211,6 +211,33 @@ function App() {
     } }, 800);
   }
 
+  // abrir um chat a partir de um item do feed do Resumo do dia
+  function openInsightChat(item) {
+    setConvDash(null); setActiveChat('c1'); setActiveNav('home'); setOpenDash(null);
+    setPanes([]); setPaneDir('row'); setScenario(4);
+    const badge = {
+      danger:  { label: 'Crítico', tone: 'danger', icon: 'alert-triangle' },
+      warning: { label: 'Atenção', tone: 'warning', icon: 'clock' },
+      info:    { label: 'Informativo', tone: 'info', icon: 'circle-dot' },
+      success: { label: 'Aprovação', tone: 'success', icon: 'check-circle' },
+      accent:  { label: 'Marco', tone: 'accent', icon: 'check-circle' },
+    }[item.tone];
+    const isDoc = /documento|revisad|emitid/i.test((item.kind || '') + ' ' + (item.text || ''));
+    setMessages([
+      { role: 'user', text: `Perguntar sobre: ${item.text}`, time: 'agora' },
+      { role: 'assistant', agent: 'analista de dados', chat: { title: (item.kind || 'Evento') + ' · Feed do projeto', subtitle: item.who || 'Feed do projeto' }, time: 'agora', rich: {
+        badges: badge ? [badge] : [],
+        blocks: [
+          { type: 'p', parts: ['Este item veio do feed do projeto: ', { b: item.text }] },
+          { type: 'p', parts: [`Origem: ${item.who || 'Feed'}${item.when ? ' · ' + item.when : ''}. Posso detalhar o contexto, abrir o painel relacionado ou compartilhar com o time.`] },
+          isDoc
+            ? { type: 'action', label: 'Abrir documento', icon: 'file-text', kind: 'doc' }
+            : { type: 'action', label: 'Abrir dashboard padrão', icon: 'layout-dashboard', kind: 'dashboard' },
+        ],
+      } },
+    ]);
+  }
+
   // criação de documento pelo chat: abre bloco lateral com o texto gerado
   function buildTextDoc(text) {
     const t = text.toLowerCase();
@@ -918,7 +945,7 @@ function App() {
               onQuickAction={handleQuickAction}
               onAction={handleQuickAction}
               activeFocus={focusedTag} onTagClick={handleTagClick} thinking={thinking}
-              dashKpis={dashKpis} onAddKpi={addKpi} onRemoveKpi={removeKpi} onKpiAction={handleKpiAction}
+              dashKpis={dashKpis} onAddKpi={addKpi} onRemoveKpi={removeKpi} onKpiAction={handleKpiAction} onAskInsight={openInsightChat}
               dashWidgets={dashWidgets} onAddWidget={addWidget} onRemoveWidget={removeWidget}
               messages={messages}
               onSend={handleSend} onSkill={handleSkill} showSkills={t.showSkills}

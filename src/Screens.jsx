@@ -84,7 +84,7 @@ function renderPane(key, density, menuItems, dash, focusedTag) {
     case 'viewer3d':  return <Viewer3D {...common} focusedTag={focusedTag} />;
     case 'doctable':  return <DocTableBlock {...common} />;
     case 'assets':    return <AssetsTableBlock {...common} />;
-    case 'resumo':    return <DailySummaryBlock {...common} />;
+    case 'resumo':    return <DailySummaryBlock {...common} onOpenInsight={dash && dash.onAskInsight} />;
     case 'sign':      return <SignDocsBlock {...common} onToast={dash && dash.onToast} />;
     case 'textdoc':   return <TextDocBlock {...common} doc={dash && dash.textDoc} onToast={dash && dash.onToast} />;
     case 'doc':       return <DocPreviewBlock {...common} />;
@@ -181,7 +181,7 @@ function ScreenContent(props) {
     );
   } else {
     const isHome = scenario <= 2;
-    const dash = { kpiIds: dashKpis, widgets: dashWidgets, onAddKpi, onRemoveKpi, onAddWidget, onRemoveWidget, onKpiAction, sources, pinnedDash: isHome ? props.homeDash : (props.convDash || null), textDoc: props.textDoc, onToast: props.onToast };
+    const dash = { kpiIds: dashKpis, widgets: dashWidgets, onAddKpi, onRemoveKpi, onAddWidget, onRemoveWidget, onKpiAction, onAskInsight: props.onAskInsight, sources, pinnedDash: isHome ? props.homeDash : (props.convDash || null), textDoc: props.textDoc, onToast: props.onToast };
     const menuFor = (key) => buildMenu(key, { isHome, onRemovePane, onPinHome, pinned: homePanes.includes(key) });
     if (panes.length === 0) {
       // no blocks open → solo chat, header full-width, content centered by ChatPanel

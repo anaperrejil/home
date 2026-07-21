@@ -486,7 +486,7 @@ function ProjectFeed() {
 }
 
 // ---- Resumo do dia (bloco com feed) ---------------------------------------
-function DailySummaryBlock({ density, menuItems, style, variant }) {
+function DailySummaryBlock({ density, menuItems, style, variant, onOpenInsight }) {
   const toneColor = { danger: 'var(--color-danger)', accent: 'var(--color-accent-text)', success: 'var(--color-success)', warning: 'var(--color-warning)', info: 'var(--color-primary)' };
   const date = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
   const stats = [
@@ -504,13 +504,16 @@ function DailySummaryBlock({ density, menuItems, style, variant }) {
     <div key={label}>
       <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', margin: '14px 0 4px' }}>{label}</div>
       {items.map((f) => (
-        <div key={f.id} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--color-border)' }}>
+        <button key={f.id} onClick={() => onOpenInsight && onOpenInsight(f)} title="Perguntar sobre este item"
+          onMouseEnter={(e) => { if (onOpenInsight) e.currentTarget.style.background = 'var(--color-bg-subtle)'; }} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          style={{ display: 'flex', gap: 10, width: '100%', textAlign: 'left', padding: '10px 8px', margin: '0 -8px', borderRadius: 8, borderBottom: '1px solid var(--color-border)', background: 'transparent', border: 'none', cursor: onOpenInsight ? 'pointer' : 'default', fontFamily: 'inherit', transition: 'background 120ms ease' }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: toneColor[f.tone], marginTop: 5, flexShrink: 0 }} />
-          <div style={{ minWidth: 0 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontSize: 13, color: 'var(--color-text-primary)', lineHeight: 1.5 }}><strong style={{ fontWeight: 600 }}>{f.kind}</strong> {f.text}</div>
             <div style={{ fontSize: 11.5, color: 'var(--color-text-tertiary)', marginTop: 2 }}>{f.who} {f.when}</div>
           </div>
-        </div>
+          {onOpenInsight && <Icon name="message-square-plus" size={15} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0, alignSelf: 'center' }} />}
+        </button>
       ))}
     </div>
   );
